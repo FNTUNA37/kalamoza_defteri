@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "89411685194",
+    "firebase_url": "https://kalamoza-defteri.firebaseio.com",
+    "project_id": "kalamoza-defteri",
+    "storage_bucket": "kalamoza-defteri.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:89411685194:android:6198abf24261289d17cfb3",
+        "android_client_info": {
+          "package_name": "com.a37gmail.fntuna.kalamoza_defteri"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "89411685194-h6tnr63n1ud67se2fgrbljr0vvv0le3b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHdC2B6IIZYo7XEC0buc7CRuEtRj-irbs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "89411685194-h6tnr63n1ud67se2fgrbljr0vvv0le3b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
