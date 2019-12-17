@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
-import 'screen/login_page.dart';
+import 'package:kalamoza_defteri/authentication.dart';
+import 'package:kalamoza_defteri/mapping.dart';
 
 void main() => runApp(MyApp());
 
@@ -10,9 +10,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        primaryColor: Color(0xFFFB415B),
+        primarySwatch: Colors.pink,
       ),
-      home: LoginPage(),
+      home: MappingPage(
+        auth: Auth(),
+      ),
     );
   }
 }
