@@ -16,6 +16,8 @@ enum FormType {
 
 class _LoginPageState extends State<LoginPage> {
   final formKey = new GlobalKey<FormState>();
+  Icon passIcon = Icon(Icons.visibility_off);
+  bool obscureText = true;
   FormType _formType = FormType.login;
   String _email = '';
   String _password = '';
@@ -89,7 +91,8 @@ class _LoginPageState extends State<LoginPage> {
         height: 20.0,
       ),
       TextFormField(
-        decoration: InputDecoration(labelText: 'Email'),
+        decoration:
+            InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.mail)),
         validator: (value) {
           return value.isEmpty ? 'Email is required' : null;
         },
@@ -101,8 +104,25 @@ class _LoginPageState extends State<LoginPage> {
         height: 10.0,
       ),
       TextFormField(
-        decoration: InputDecoration(labelText: 'Password'),
-        obscureText: true,
+        decoration: InputDecoration(
+          labelText: 'Password',
+          prefixIcon: Icon(Icons.lock),
+          suffixIcon: InkWell(
+            child: passIcon,
+            onTap: () {
+              setState(() {
+                if (passIcon == Icon(Icons.visibility_off)) {
+                  passIcon = Icon(Icons.visibility);
+                  obscureText = false;
+                } else {
+                  passIcon = Icon(Icons.visibility_off);
+                  obscureText = true;
+                }
+              });
+            },
+          ),
+        ),
+        obscureText: obscureText,
         validator: (value) {
           return value.isEmpty ? 'Password is required' : null;
         },

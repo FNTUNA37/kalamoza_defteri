@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:kalamoza_defteri/authentication.dart';
+
+Color backgroundColor = Colors.white;
 
 class HomePage extends StatefulWidget {
   @override
@@ -9,7 +12,8 @@ class HomePage extends StatefulWidget {
   final VoidCallback onSignedOut;
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   void _logoutUser() async {
     try {
       await widget.auth.signOut();
@@ -19,16 +23,192 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  bool isCollapsed = true;
+  double screenWidth, screenHeight;
+  final Duration duration = const Duration(milliseconds: 300);
+  AnimationController _controller;
+  Animation<double> _scaleAnimation;
+  Animation<double> _menuScaleAnimation;
+  Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: duration);
+    _scaleAnimation = Tween<double>(begin: 1, end: 0.8).animate(_controller);
+    _menuScaleAnimation =
+        Tween<double>(begin: 0.5, end: 1).animate(_controller);
+    _slideAnimation = Tween<Offset>(begin: Offset(-1, 0), end: Offset(0, 0))
+        .animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
+    screenHeight = size.height;
+    screenWidth = size.width;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Home'),
-      ),
-      body: RaisedButton(
-        child: Text('ÇIKIŞ'),
-        onPressed: _logoutUser,
+      backgroundColor: backgroundColor,
+      body: Stack(
+        children: <Widget>[
+          menu(context),
+          dashboard(context),
+        ],
       ),
     );
+  }
+
+  Widget menu(context) {
+    return SlideTransition(
+      position: _slideAnimation,
+      child: ScaleTransition(
+        scale: _menuScaleAnimation,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text("Dashboard",
+                    style: TextStyle(color: Colors.white, fontSize: 22)),
+                SizedBox(height: 10),
+                Text("Messages",
+                    style: TextStyle(color: Colors.white, fontSize: 22)),
+                SizedBox(height: 10),
+                Text("Utility Bills",
+                    style: TextStyle(color: Colors.white, fontSize: 22)),
+                SizedBox(height: 10),
+                Text("Funds Transfer",
+                    style: TextStyle(color: Colors.white, fontSize: 22)),
+                SizedBox(height: 10),
+                Text("Branches",
+                    style: TextStyle(color: Colors.white, fontSize: 22)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget dashboard(context) {
+    return AnimatedPositioned(
+      duration: duration,
+      top: 0,
+      bottom: 0,
+      left: isCollapsed ? 0 : 0.6 * screenWidth,
+      right: isCollapsed ? 0 : -0.2 * screenWidth,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Material(
+          animationDuration: duration,
+          borderRadius: BorderRadius.all(Radius.circular(40)),
+          elevation: 8,
+          color: backgroundColor,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            physics: ClampingScrollPhysics(),
+            child: Container(
+              padding: const EdgeInsets.only(left: 16, right: 16, top: 48),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      InkWell(
+                        child: Icon(Icons.menu, color: Colors.black),
+                        onTap: () {
+                          setState(() {
+                            if (isCollapsed) {
+                              backgroundColor = Color(0xFF4A4A58);
+                              _controller.forward();
+                            } else {
+                              backgroundColor = Colors.white;
+                              _controller.reverse();
+                            }
+
+                            isCollapsed = !isCollapsed;
+                          });
+                        },
+                      ),
+                      Text("My Cards",
+                          style: TextStyle(fontSize: 24, color: Colors.black)),
+                      InkWell(
+                        child: Icon(Icons.exit_to_app, color: Colors.black),
+                        onTap: _logoutUser,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 50),
+                  Container(
+                    height: 200,
+                    child: PageView(
+                      controller: PageController(viewportFraction: 0.8),
+                      scrollDirection: Axis.horizontal,
+                      pageSnapping: true,
+                      children: <Widget>[
+                        Container(
+                          decoration: BoxDecoration(
+                              color: Colors.blue,
+                              borderRadius: BorderRadius.circular(20.0)),
+                          margin: const EdgeInsets.symmetric(horizontal: 8),
+                          width: 100,
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                              color: Colors.blue,
+                              borderRadius: BorderRadius.circular(20.0)),
+                          margin: const EdgeInsets.symmetric(horizontal: 8),
+                          width: 100,
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                              color: Colors.blue,
+                              borderRadius: BorderRadius.circular(20.0)),
+                          margin: const EdgeInsets.symmetric(horizontal: 8),
+                          width: 100,
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    "Transactions",
+                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  ),
+                  StreamBuilder(
+                    stream: Firestore.instance.collection('Card').snapshots(),
+                    builder: (context, snapshot) {
+                      return ListView(
+                        shrinkWrap: true,
+                        children: list(snapshot),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> list(AsyncSnapshot snapshot) {
+    return snapshot.data.documents.map<Widget>((document) {
+      return Text('data');
+    }).toList();
   }
 }
