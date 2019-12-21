@@ -1,8 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:kalamoza_defteri/authentication.dart';
-
-Color backgroundColor = Colors.white;
+import 'package:kalamoza_defteri/screen/card_page.dart';
+import 'package:kalamoza_defteri/screen/dashboard_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -30,6 +29,8 @@ class _HomePageState extends State<HomePage>
   Animation<double> _scaleAnimation;
   Animation<double> _menuScaleAnimation;
   Animation<Offset> _slideAnimation;
+  Color backgroundColor = Colors.white;
+  Widget screen = Container(child: Text('Home Page'));
 
   @override
   void initState() {
@@ -59,49 +60,13 @@ class _HomePageState extends State<HomePage>
       body: Stack(
         children: <Widget>[
           menu(context),
-          dashboard(context),
+          animation(context),
         ],
       ),
     );
   }
 
-  Widget menu(context) {
-    return SlideTransition(
-      position: _slideAnimation,
-      child: ScaleTransition(
-        scale: _menuScaleAnimation,
-        child: Padding(
-          padding: const EdgeInsets.only(left: 16.0),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text("Dashboard",
-                    style: TextStyle(color: Colors.white, fontSize: 22)),
-                SizedBox(height: 10),
-                Text("Messages",
-                    style: TextStyle(color: Colors.white, fontSize: 22)),
-                SizedBox(height: 10),
-                Text("Utility Bills",
-                    style: TextStyle(color: Colors.white, fontSize: 22)),
-                SizedBox(height: 10),
-                Text("Funds Transfer",
-                    style: TextStyle(color: Colors.white, fontSize: 22)),
-                SizedBox(height: 10),
-                Text("Branches",
-                    style: TextStyle(color: Colors.white, fontSize: 22)),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget dashboard(context) {
+  Widget animation(context) {
     return AnimatedPositioned(
       duration: duration,
       top: 0,
@@ -122,6 +87,7 @@ class _HomePageState extends State<HomePage>
               padding: const EdgeInsets.only(left: 16, right: 16, top: 48),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -143,7 +109,7 @@ class _HomePageState extends State<HomePage>
                           });
                         },
                       ),
-                      Text("My Cards",
+                      Text("Kalamoza Defteri",
                           style: TextStyle(fontSize: 24, color: Colors.black)),
                       InkWell(
                         child: Icon(Icons.exit_to_app, color: Colors.black),
@@ -153,50 +119,10 @@ class _HomePageState extends State<HomePage>
                   ),
                   SizedBox(height: 50),
                   Container(
-                    height: 200,
-                    child: PageView(
-                      controller: PageController(viewportFraction: 0.8),
-                      scrollDirection: Axis.horizontal,
-                      pageSnapping: true,
-                      children: <Widget>[
-                        Container(
-                          decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(20.0)),
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          width: 100,
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(20.0)),
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          width: 100,
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(20.0)),
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          width: 100,
-                        ),
-                      ],
-                    ),
+                    height: 800,
+                    child: screen,
                   ),
                   SizedBox(height: 20),
-                  Text(
-                    "Transactions",
-                    style: TextStyle(color: Colors.white, fontSize: 20),
-                  ),
-                  StreamBuilder(
-                    stream: Firestore.instance.collection('Card').snapshots(),
-                    builder: (context, snapshot) {
-                      return ListView(
-                        shrinkWrap: true,
-                        children: list(snapshot),
-                      );
-                    },
-                  ),
                 ],
               ),
             ),
@@ -206,9 +132,57 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  List<Widget> list(AsyncSnapshot snapshot) {
-    return snapshot.data.documents.map<Widget>((document) {
-      return Text('data');
-    }).toList();
+  Widget menu(context) {
+    return SlideTransition(
+      position: _slideAnimation,
+      child: ScaleTransition(
+        scale: _menuScaleAnimation,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                InkWell(
+                  child: Text(
+                    "Dashboard",
+                    style: TextStyle(color: Colors.red, fontSize: 22),
+                  ),
+                  onTap: () {
+                    setState(() {
+                      screen = DashboardPage();
+                    });
+                  },
+                ),
+                SizedBox(height: 10),
+                InkWell(
+                  child: Text(
+                    "Cards",
+                    style: TextStyle(color: Colors.red, fontSize: 22),
+                  ),
+                  onTap: () {
+                    setState(() {
+                      screen = CardPage();
+                    });
+                  },
+                ),
+                SizedBox(height: 10),
+                Text("Utility Bills",
+                    style: TextStyle(color: Colors.white, fontSize: 22)),
+                SizedBox(height: 10),
+                Text("Funds Transfer",
+                    style: TextStyle(color: Colors.white, fontSize: 22)),
+                SizedBox(height: 10),
+                Text("Branches",
+                    style: TextStyle(color: Colors.white, fontSize: 22)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

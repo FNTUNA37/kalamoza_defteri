@@ -65,31 +65,34 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Login'),
-      ),
-      body: Container(
-        margin: EdgeInsets.all(15.0),
-        child: Form(
-          key: formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: createInputs() + createButtons(),
+      body: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          Image.asset(
+            'images/login_background.jpeg',
+            fit: BoxFit.cover,
           ),
-        ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Container(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: createInputs() + createButtons(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
   List<Widget> createInputs() {
     return [
-      SizedBox(
-        height: 10.0,
-      ),
-      logo(),
-      SizedBox(
-        height: 20.0,
-      ),
       TextFormField(
         decoration:
             InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.mail)),
