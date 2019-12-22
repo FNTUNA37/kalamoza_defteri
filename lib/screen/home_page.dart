@@ -117,9 +117,9 @@ class _HomePageState extends State<HomePage>
                       ),
                     ],
                   ),
-                  SizedBox(height: 50),
+                  SizedBox(height: 25),
                   Container(
-                    height: 800,
+                    height: 720,
                     child: screen,
                   ),
                   SizedBox(height: 20),

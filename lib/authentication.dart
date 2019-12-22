@@ -7,8 +7,6 @@ abstract class BaseAuth {
 
   Future<FirebaseUser> getCurrentUser();
 
-  Future<String> getUser();
-
   Future<void> sendEmailVerification();
 
   Future<void> signOut();
@@ -38,11 +36,6 @@ class Auth implements BaseAuth {
   Future<FirebaseUser> getCurrentUser() async {
     FirebaseUser user = await _firebaseAuth.currentUser();
     return user;
-  }
-
-  Future<String> getUser() async {
-    FirebaseUser user = await FirebaseAuth.instance.currentUser();
-    return user.uid;
   }
 
   Future<void> signOut() async {
