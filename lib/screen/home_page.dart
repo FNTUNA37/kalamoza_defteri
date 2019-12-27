@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kalamoza_defteri/authentication.dart';
 import 'package:kalamoza_defteri/screen/card_page.dart';
 import 'package:kalamoza_defteri/screen/dashboard_page.dart';
+import 'package:kalamoza_defteri/screen/transactions_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -170,8 +171,17 @@ class _HomePageState extends State<HomePage>
                   },
                 ),
                 SizedBox(height: 10),
-                Text("Utility Bills",
-                    style: TextStyle(color: Colors.white, fontSize: 22)),
+                InkWell(
+                  child: Text(
+                    "Transactions",
+                    style: TextStyle(color: Colors.red, fontSize: 22),
+                  ),
+                  onTap: () {
+                    setState(() {
+                      screen = TransactionsPage();
+                    });
+                  },
+                ),
                 SizedBox(height: 10),
                 Text("Funds Transfer",
                     style: TextStyle(color: Colors.white, fontSize: 22)),

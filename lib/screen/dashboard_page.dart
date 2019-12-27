@@ -34,7 +34,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ),
         StreamBuilder(
-          stream: Firestore.instance.collection('Card').snapshots(),
+          stream: Firestore.instance.collection('cards').snapshots(),
           builder: (context, snapshot) {
             return ListView(
               shrinkWrap: true,
@@ -51,7 +51,7 @@ class _DashboardPageState extends State<DashboardPage> {
       return Container(
         child: Column(
           children: <Widget>[
-            Text(document['Name']),
+            Text(document['name']),
           ],
         ),
       );
@@ -59,6 +59,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 }
 
+//TODO:Taşınıcak
 class CardContainer extends StatelessWidget {
   CardContainer({this.color, this.description, this.amount});
 

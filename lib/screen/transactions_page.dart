@@ -1,59 +1,84 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
-class CardPage extends StatefulWidget {
+class TransactionsPage extends StatefulWidget {
   @override
-  _CardPageState createState() => _CardPageState();
+  _TransactionsPageState createState() => _TransactionsPageState();
 }
 
-class _CardPageState extends State<CardPage> {
+class _TransactionsPageState extends State<TransactionsPage> {
   final _formKey = GlobalKey<FormState>();
-  Color color;
+
+  String _cardId;
   String _userId;
-  String _description;
-  String _cardName;
+  String _amount;
 
   @override
   Widget build(BuildContext context) {
-    //TODO: Ayrı bi yere al sonra kullanırsın
     FirebaseAuth.instance.currentUser().then((user) {
       _userId = user.uid;
     });
     return Column(
       children: <Widget>[
         Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             FloatingActionButton.extended(
-              splashColor: Colors.pink,
               onPressed: () {
-                //Todo: Taşınacak
                 Alert(
                   context: context,
-                  title: 'Add Card',
+                  title: 'Add Receivable',
                   content: Form(
                     key: _formKey,
                     child: Column(
                       children: <Widget>[
+                        StreamBuilder<QuerySnapshot>(
+                            stream: Firestore.instance
+                                .collection('cards')
+                                .snapshots(),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData)
+                                return const Text('Loading...');
+                              return DropdownButton(
+                                items: snapshot.data.documents
+                                    .map((DocumentSnapshot document) {
+                                  if (document.data['userId'] == _userId) {
+                                    return DropdownMenuItem(
+                                      value: document.documentID,
+                                      child: Text(
+                                        document.data['name'],
+                                      ),
+                                    );
+                                  } else if (document.data['userId'] !=
+                                      _userId) {
+                                    return DropdownMenuItem(
+                                      child: Text(document['name']),
+                                    );
+                                  } else {
+                                    return DropdownMenuItem(
+                                      value: null,
+                                      child: Text('Kartr Ekleyin'),
+                                    );
+                                  }
+                                }).toList(),
+                                onChanged: (select) {
+                                  setState(() {
+                                    print(select);
+                                    _cardId = select;
+                                  });
+                                },
+                                icon: Icon(Icons.folder_shared),
+                              );
+                            }),
                         TextFormField(
                           decoration: InputDecoration(
-                            labelText: 'Name',
-                            icon: Icon(Icons.folder_shared),
+                            labelText: 'Amount',
+                            icon: Icon(Icons.monetization_on),
                           ),
                           onSaved: (value) {
-                            return _cardName = value;
-                          },
-                        ),
-                        TextFormField(
-                          decoration: InputDecoration(
-                            labelText: 'Description',
-                            icon: Icon(Icons.folder_shared),
-                          ),
-                          onSaved: (value) {
-                            return _description = value;
+                            return _amount = value;
                           },
                         ),
                       ],
@@ -72,50 +97,60 @@ class _CardPageState extends State<CardPage> {
                           _formKey.currentState.save();
                         }
                         Firestore.instance
-                            .collection('cards')
+                            .collection('transactions')
                             .document()
                             .setData({
-                          'name': _cardName,
-                          'userId': _userId,
-                          'description': _description
+                          'CardId': _cardId,
+                          'UserId': _userId,
+                          'Type': 'Receivable',
+                          'Amount': _amount
                         });
                       },
                     )
                   ],
                 ).show();
               },
-              icon: Icon(Icons.add_circle),
-              label: Text('Add Card'),
-              backgroundColor: Colors.red,
-            )
+              label: Text('Add Receivable'),
+              icon: Icon(Icons.attach_money),
+            ),
+            FloatingActionButton.extended(
+              onPressed: () {},
+              label: Text('Add Debt'),
+              icon: Icon(Icons.money_off),
+            ),
           ],
         ),
-        StreamBuilder(
-          stream: Firestore.instance.collection('cards').snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) return new Text('Error: ${snapshot.error}');
-            switch (snapshot.connectionState) {
-              case ConnectionState.waiting:
-                return new Text('Loading...');
-              default:
-                return ListView(
-                  shrinkWrap: true,
-                  children: cardList(snapshot, _userId),
-                );
-            }
-          },
-        ),
+        Column(
+          children: <Widget>[
+            StreamBuilder(
+              stream: Firestore.instance.collection('transactions').snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError)
+                  return new Text('Error: ${snapshot.error}');
+                switch (snapshot.connectionState) {
+                  case ConnectionState.waiting:
+                    return new Text('Loading...');
+                  default:
+                    return ListView(
+                      shrinkWrap: true,
+                      children: cardList(snapshot, _userId),
+                    );
+                }
+              },
+            ),
+          ],
+        )
       ],
     );
   }
 
-//Todo: başka yere taşı
   List<Widget> cardList(AsyncSnapshot snapshot, String userId) {
     return snapshot.data.documents.map<Widget>((document) {
-      if (document['userId'] == userId) {
+      if (document['UserId'] == userId) {
         return Container(
           //Todo: Style taşınacak
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Container(
                 decoration: BoxDecoration(
@@ -124,11 +159,11 @@ class _CardPageState extends State<CardPage> {
                 ),
                 child: InkWell(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        document['name'],
+                        document['Type'],
                         style: TextStyle(
                           fontSize: 25.0,
                           fontWeight: FontWeight.w600,
@@ -136,6 +171,7 @@ class _CardPageState extends State<CardPage> {
                           color: Colors.green,
                         ),
                       ),
+                      Text(document['UserId']),
                     ],
                   ),
                   onTap: () {
