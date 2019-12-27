@@ -34,7 +34,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ),
         StreamBuilder(
-          stream: Firestore.instance.collection('cards').snapshots(),
+          stream: Firestore.instance.collection('transactions').snapshots(),
           builder: (context, snapshot) {
             return ListView(
               shrinkWrap: true,
@@ -51,7 +51,7 @@ class _DashboardPageState extends State<DashboardPage> {
       return Container(
         child: Column(
           children: <Widget>[
-            Text(document['name']),
+            Text(document['Type']),
           ],
         ),
       );

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:kalamoza_defteri/api.dart';
 
 class TransactionsPage extends StatefulWidget {
   @override
@@ -10,16 +11,16 @@ class TransactionsPage extends StatefulWidget {
 
 class _TransactionsPageState extends State<TransactionsPage> {
   final _formKey = GlobalKey<FormState>();
-
+  Api api;
   String _cardId;
   String _userId;
   String _amount;
-
   @override
   Widget build(BuildContext context) {
     FirebaseAuth.instance.currentUser().then((user) {
       _userId = user.uid;
     });
+
     return Column(
       children: <Widget>[
         Row(
@@ -44,6 +45,96 @@ class _TransactionsPageState extends State<TransactionsPage> {
                               return DropdownButton(
                                 items: snapshot.data.documents
                                     .map((DocumentSnapshot document) {
+                                  if (document.data['userId'] == _userId) {
+                                    return DropdownMenuItem(
+                                      value: document.documentID,
+                                      child: Text(
+                                        document.data['name'],
+                                      ),
+                                    );
+                                  } else if (document.data['userId'] !=
+                                      _userId) {
+                                    return DropdownMenuItem(
+                                      child: Text(document['name']),
+                                    );
+                                  } else {
+                                    return DropdownMenuItem(
+                                      value: null,
+                                      child: Text('Kart Ekleyin'),
+                                    );
+                                  }
+                                }).toList(),
+                                onChanged: (select) {
+                                  setState(() {
+                                    print(select);
+                                    _cardId = select;
+                                  });
+                                },
+                                icon: Icon(Icons.folder_shared),
+                              );
+                            }),
+                        TextFormField(
+                          decoration: InputDecoration(
+                            labelText: 'Amount',
+                            icon: Icon(Icons.monetization_on),
+                          ),
+                          onSaved: (value) {
+                            return _amount = value;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  buttons: [
+                    //Todo:Kod tekrarı var yeni widget oluşturup başka yere taşı
+                    DialogButton(
+                      //Todo: Style taşınacak
+                      child: Text(
+                        'ADD',
+                        style: TextStyle(color: Colors.white, fontSize: 16.0),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        if (_formKey.currentState.validate()) {
+                          _formKey.currentState.save();
+                        }
+                        Firestore.instance
+                            .collection('transactions')
+                            .document()
+                            .setData({
+                          'CardId': _cardId,
+                          'UserId': _userId,
+                          'Type': 'Receivable',
+                          'Amount': _amount
+                        });
+                      },
+                    )
+                  ],
+                ).show();
+              },
+              label: Text('Add Receivable'),
+              icon: Icon(Icons.attach_money),
+            ),
+            FloatingActionButton.extended(
+              onPressed: () {
+                Alert(
+                  context: context,
+                  title: 'Add Debt',
+                  content: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: <Widget>[
+                        StreamBuilder<QuerySnapshot>(
+                            stream: Firestore.instance
+                                .collection('cards')
+                                .snapshots(),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData)
+                                return const Text('Loading...');
+                              return DropdownButton(
+                                items: snapshot.data.documents
+                                    .map((DocumentSnapshot document) {
+                                  //todo:Tüm kullanıcıların kartını listeliyo düzelt
                                   if (document.data['userId'] == _userId) {
                                     return DropdownMenuItem(
                                       value: document.documentID,
@@ -102,7 +193,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                             .setData({
                           'CardId': _cardId,
                           'UserId': _userId,
-                          'Type': 'Receivable',
+                          'Type': 'Debt',
                           'Amount': _amount
                         });
                       },
@@ -110,11 +201,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
                   ],
                 ).show();
               },
-              label: Text('Add Receivable'),
-              icon: Icon(Icons.attach_money),
-            ),
-            FloatingActionButton.extended(
-              onPressed: () {},
               label: Text('Add Debt'),
               icon: Icon(Icons.money_off),
             ),
@@ -133,7 +219,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                   default:
                     return ListView(
                       shrinkWrap: true,
-                      children: cardList(snapshot, _userId),
+                      children: transactionsList(snapshot, _userId),
                     );
                 }
               },
@@ -144,7 +230,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
     );
   }
 
-  List<Widget> cardList(AsyncSnapshot snapshot, String userId) {
+//Todo:Taşınacak
+  List<Widget> transactionsList(AsyncSnapshot snapshot, String userId) {
     return snapshot.data.documents.map<Widget>((document) {
       if (document['UserId'] == userId) {
         return Container(
@@ -171,7 +258,15 @@ class _TransactionsPageState extends State<TransactionsPage> {
                           color: Colors.green,
                         ),
                       ),
-                      Text(document['UserId']),
+                      StreamBuilder(
+                        stream:
+                            Firestore.instance.collection('cards').snapshots(),
+                        builder: (context, snapshots) {
+                          return ListView(
+                            shrinkWrap: true,
+                          );
+                        },
+                      ),
                     ],
                   ),
                   onTap: () {
