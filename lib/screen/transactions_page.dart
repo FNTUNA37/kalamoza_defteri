@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:kalamoza_defteri/api.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class TransactionsPage extends StatefulWidget {
   @override
@@ -11,7 +11,8 @@ class TransactionsPage extends StatefulWidget {
 
 class _TransactionsPageState extends State<TransactionsPage> {
   final _formKey = GlobalKey<FormState>();
-  Api api;
+  Api cardApi = Api('cards');
+  Api transactionsApi = Api('transactions');
   String _cardId;
   String _userId;
   String _amount;
@@ -36,9 +37,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     child: Column(
                       children: <Widget>[
                         StreamBuilder<QuerySnapshot>(
-                            stream: Firestore.instance
-                                .collection('cards')
-                                .snapshots(),
+                            stream: cardApi.streamDataCollection(),
                             builder: (context, snapshot) {
                               if (!snapshot.hasData)
                                 return const Text('Loading...');
@@ -125,9 +124,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     child: Column(
                       children: <Widget>[
                         StreamBuilder<QuerySnapshot>(
-                            stream: Firestore.instance
-                                .collection('cards')
-                                .snapshots(),
+                            stream: cardApi.streamDataCollection(),
                             builder: (context, snapshot) {
                               if (!snapshot.hasData)
                                 return const Text('Loading...');
@@ -209,7 +206,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
         Column(
           children: <Widget>[
             StreamBuilder(
-              stream: Firestore.instance.collection('transactions').snapshots(),
+              stream: transactionsApi.streamDataCollection(),
               builder: (context, snapshot) {
                 if (snapshot.hasError)
                   return new Text('Error: ${snapshot.error}');
@@ -239,92 +236,93 @@ class _TransactionsPageState extends State<TransactionsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.green, width: 4.0),
-                  borderRadius: BorderRadius.circular(7.0),
-                ),
-                child: InkWell(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        document['Type'],
-                        style: TextStyle(
-                          fontSize: 25.0,
-                          fontWeight: FontWeight.w600,
-                          decorationColor: Colors.green,
-                          color: Colors.green,
-                        ),
-                      ),
-                      StreamBuilder(
-                        stream:
-                            Firestore.instance.collection('cards').snapshots(),
-                        builder: (context, snapshots) {
-                          return ListView(
-                            shrinkWrap: true,
-                          );
-                        },
-                      ),
-                    ],
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.green, width: 3.0),
+                    borderRadius: BorderRadius.circular(7.0),
                   ),
-                  onTap: () {
-                    Alert(
-                      context: context,
-                      title: 'Description',
-                      content: Column(
-                        children: <Widget>[
-                          Row(
-                            children: <Widget>[
-                              Text(
-                                'Card Name: ',
-                                style: TextStyle(
-                                    color: Colors.black38,
-                                    fontSize: 20.0,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                document['name'],
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ],
+                  child: InkWell(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        Text(
+                          document['CardId'],
+                          style: TextStyle(
+                            fontSize: 25.0,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.green,
                           ),
-                          Row(
-                            children: <Widget>[
-                              Text(
-                                'Description: ',
-                                style: TextStyle(
-                                    color: Colors.black38,
-                                    fontSize: 20.0,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                document['description'],
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      style: AlertStyle(backgroundColor: Colors.white60),
-                      buttons: [
-                        DialogButton(
-                          child: Text('CANCEL',
-                              style: TextStyle(
-                                  color: Colors.white, fontSize: 16.0)),
-                          onPressed: () => Navigator.pop(context),
-                          color: Colors.red,
+                        ),
+                        Text(
+                          document['Amount'],
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                              color: document['Type'] == 'Receivable'
+                                  ? Colors.green
+                                  : Colors.red),
                         ),
                       ],
-                    ).show();
-                  },
+                    ),
+                    onTap: () {
+                      Alert(
+                        context: context,
+                        title: 'Description',
+                        content: Column(
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                Text(
+                                  'Card Name: ',
+                                  style: TextStyle(
+                                      color: Colors.black38,
+                                      fontSize: 20.0,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  document['UserId'],
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: <Widget>[
+                                Text(
+                                  'Description: ',
+                                  style: TextStyle(
+                                      color: Colors.black38,
+                                      fontSize: 20.0,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  document['description'],
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        style: AlertStyle(backgroundColor: Colors.white60),
+                        buttons: [
+                          DialogButton(
+                            child: Text('CANCEL',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 16.0)),
+                            onPressed: () => Navigator.pop(context),
+                            color: Colors.red,
+                          ),
+                        ],
+                      ).show();
+                    },
+                  ),
                 ),
               ),
             ],
           ),
         );
-      } else if (document['userıd'] != userId) {
+      } else if (document['UserId'] != userId) {
         return Container();
       } else {
         return Container(

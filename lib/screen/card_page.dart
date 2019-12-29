@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 class CardPage extends StatefulWidget {
@@ -116,78 +116,82 @@ class _CardPageState extends State<CardPage> {
         return Container(
           //Todo: Style taşınacak
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.green, width: 4.0),
-                  borderRadius: BorderRadius.circular(7.0),
-                ),
-                child: InkWell(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        document['name'],
-                        style: TextStyle(
-                          fontSize: 25.0,
-                          fontWeight: FontWeight.w600,
-                          decorationColor: Colors.green,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ],
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.green, width: 3.0),
+                    borderRadius: BorderRadius.circular(7.0),
                   ),
-                  onTap: () {
-                    Alert(
-                      context: context,
-                      title: 'Description',
-                      content: Column(
-                        children: <Widget>[
-                          Row(
-                            children: <Widget>[
-                              Text(
-                                'Card Name: ',
-                                style: TextStyle(
-                                    color: Colors.black38,
-                                    fontSize: 20.0,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                document['name'],
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ],
+                  child: InkWell(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        Text(
+                          document['name'],
+                          style: TextStyle(
+                            fontSize: 25.0,
+                            fontWeight: FontWeight.w600,
+                            decorationColor: Colors.green,
+                            color: Colors.green,
                           ),
-                          Row(
-                            children: <Widget>[
-                              Text(
-                                'Description: ',
-                                style: TextStyle(
-                                    color: Colors.black38,
-                                    fontSize: 20.0,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                document['description'],
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      style: AlertStyle(backgroundColor: Colors.white60),
-                      buttons: [
-                        DialogButton(
-                          child: Text('CANCEL',
-                              style: TextStyle(
-                                  color: Colors.white, fontSize: 16.0)),
-                          onPressed: () => Navigator.pop(context),
-                          color: Colors.red,
+                          textAlign: TextAlign.center,
                         ),
                       ],
-                    ).show();
-                  },
+                    ),
+                    onTap: () {
+                      Alert(
+                        context: context,
+                        title: 'Description',
+                        content: Column(
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                Text(
+                                  'Card Name: ',
+                                  style: TextStyle(
+                                      color: Colors.black38,
+                                      fontSize: 20.0,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  document['name'],
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: <Widget>[
+                                Text(
+                                  'Description: ',
+                                  style: TextStyle(
+                                      color: Colors.black38,
+                                      fontSize: 20.0,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  document['description'],
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        style: AlertStyle(backgroundColor: Colors.white60),
+                        buttons: [
+                          DialogButton(
+                            child: Text('CANCEL',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 16.0)),
+                            onPressed: () => Navigator.pop(context),
+                            color: Colors.red,
+                          ),
+                        ],
+                      ).show();
+                    },
+                  ),
                 ),
               ),
             ],

@@ -1,16 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 
 class Api {
   final Firestore _db = Firestore.instance;
   final String path;
   CollectionReference ref;
-
-  List<Widget> CardId(AsyncSnapshot snapshot, String cardId) {
-    return snapshot.data.documents.map<Widget>((document) {
-      return Text(document(cardId)['name']);
-    });
-  }
 
   Api(this.path) {
     ref = _db.collection(path);

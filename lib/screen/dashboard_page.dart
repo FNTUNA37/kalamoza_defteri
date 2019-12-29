@@ -50,9 +50,7 @@ class _DashboardPageState extends State<DashboardPage> {
     return snapshot.data.documents.map<Widget>((document) {
       return Container(
         child: Column(
-          children: <Widget>[
-            Text(document['Type']),
-          ],
+          children: <Widget>[],
         ),
       );
     }).toList();
