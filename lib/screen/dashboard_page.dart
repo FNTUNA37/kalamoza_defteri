@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'transactions_page.dart';
 
 class DashboardPage extends StatefulWidget {
   @override
@@ -7,8 +10,13 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
+  String _userId;
+  TransactionsPage transactionsPage = new TransactionsPage();
   @override
   Widget build(BuildContext context) {
+    FirebaseAuth.instance.currentUser().then((user) {
+      _userId = user.uid;
+    });
     return Column(
       children: <Widget>[
         Container(
@@ -34,7 +42,11 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ),
         StreamBuilder(
-          stream: Firestore.instance.collection('transactions').snapshots(),
+          stream: Firestore.instance
+              .collection('transactions')
+              .where('UserId', isEqualTo: _userId)
+              .orderBy('Date', descending: true)
+              .snapshots(),
           builder: (context, snapshot) {
             return ListView(
               shrinkWrap: true,
@@ -50,7 +62,7 @@ class _DashboardPageState extends State<DashboardPage> {
     return snapshot.data.documents.map<Widget>((document) {
       return Container(
         child: Column(
-          children: <Widget>[],
+          children: <Widget>[Text(document['Date'])],
         ),
       );
     }).toList();

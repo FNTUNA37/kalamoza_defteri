@@ -50,6 +50,18 @@ class _HomePageState extends State<HomePage>
     super.dispose();
   }
 
+  void collapsed() {
+    if (isCollapsed) {
+      backgroundColor = Color(0xFF4A4A58);
+      _controller.forward();
+    } else {
+      backgroundColor = Colors.white;
+      _controller.reverse();
+    }
+
+    isCollapsed = !isCollapsed;
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -98,15 +110,7 @@ class _HomePageState extends State<HomePage>
                         child: Icon(Icons.menu, color: Colors.black),
                         onTap: () {
                           setState(() {
-                            if (isCollapsed) {
-                              backgroundColor = Color(0xFF4A4A58);
-                              _controller.forward();
-                            } else {
-                              backgroundColor = Colors.white;
-                              _controller.reverse();
-                            }
-
-                            isCollapsed = !isCollapsed;
+                            collapsed();
                           });
                         },
                       ),
@@ -120,7 +124,6 @@ class _HomePageState extends State<HomePage>
                   ),
                   SizedBox(height: 25),
                   Container(
-                    height: 720,
                     child: screen,
                   ),
                   SizedBox(height: 20),
@@ -155,6 +158,7 @@ class _HomePageState extends State<HomePage>
                   onTap: () {
                     setState(() {
                       screen = DashboardPage();
+                      collapsed();
                     });
                   },
                 ),
@@ -167,6 +171,7 @@ class _HomePageState extends State<HomePage>
                   onTap: () {
                     setState(() {
                       screen = CardPage();
+                      collapsed();
                     });
                   },
                 ),
@@ -179,6 +184,7 @@ class _HomePageState extends State<HomePage>
                   onTap: () {
                     setState(() {
                       screen = TransactionsPage();
+                      collapsed();
                     });
                   },
                 ),

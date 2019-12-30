@@ -91,7 +91,11 @@ class _CardPageState extends State<CardPage> {
           ],
         ),
         StreamBuilder(
-          stream: Firestore.instance.collection('cards').snapshots(),
+          stream: Firestore.instance
+              .collection('cards')
+              .where('userId', isEqualTo: _userId)
+              .orderBy('name', descending: true)
+              .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.hasError) return new Text('Error: ${snapshot.error}');
             switch (snapshot.connectionState) {
@@ -112,100 +116,90 @@ class _CardPageState extends State<CardPage> {
 //Todo: başka yere taşı
   List<Widget> cardList(AsyncSnapshot snapshot, String userId) {
     return snapshot.data.documents.map<Widget>((document) {
-      if (document['userId'] == userId) {
-        return Container(
-          //Todo: Style taşınacak
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.green, width: 3.0),
-                    borderRadius: BorderRadius.circular(7.0),
+      return Container(
+        //Todo: Style taşınacak
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.green, width: 3.0),
+                  borderRadius: BorderRadius.circular(7.0),
+                ),
+                child: InkWell(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Text(
+                        document['name'],
+                        style: TextStyle(
+                          fontSize: 25.0,
+                          fontWeight: FontWeight.w600,
+                          decorationColor: Colors.green,
+                          color: Colors.green,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
-                  child: InkWell(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        Text(
-                          document['name'],
-                          style: TextStyle(
-                            fontSize: 25.0,
-                            fontWeight: FontWeight.w600,
-                            decorationColor: Colors.green,
-                            color: Colors.green,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                    onTap: () {
-                      Alert(
-                        context: context,
-                        title: 'Description',
-                        content: Column(
-                          children: <Widget>[
-                            Row(
-                              children: <Widget>[
-                                Text(
-                                  'Card Name: ',
-                                  style: TextStyle(
-                                      color: Colors.black38,
-                                      fontSize: 20.0,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  document['name'],
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: <Widget>[
-                                Text(
-                                  'Description: ',
-                                  style: TextStyle(
-                                      color: Colors.black38,
-                                      fontSize: 20.0,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  document['description'],
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        style: AlertStyle(backgroundColor: Colors.white60),
-                        buttons: [
-                          DialogButton(
-                            child: Text('CANCEL',
+                  onTap: () {
+                    Alert(
+                      context: context,
+                      title: 'Description',
+                      content: Column(
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              Text(
+                                'Card Name: ',
                                 style: TextStyle(
-                                    color: Colors.white, fontSize: 16.0)),
-                            onPressed: () => Navigator.pop(context),
-                            color: Colors.red,
+                                    color: Colors.black38,
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                document['name'],
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: <Widget>[
+                              Text(
+                                'Description: ',
+                                style: TextStyle(
+                                    color: Colors.black38,
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                document['description'],
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
                           ),
                         ],
-                      ).show();
-                    },
-                  ),
+                      ),
+                      style: AlertStyle(backgroundColor: Colors.white60),
+                      buttons: [
+                        DialogButton(
+                          child: Text('CANCEL',
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 16.0)),
+                          onPressed: () => Navigator.pop(context),
+                          color: Colors.red,
+                        ),
+                      ],
+                    ).show();
+                  },
                 ),
               ),
-            ],
-          ),
-        );
-      } else if (document['userıd'] != userId) {
-        return Container();
-      } else {
-        return Container(
-          child: Center(
-            child: Text('No card, click Add Card to add '),
-          ),
-        );
-      }
+            ),
+          ],
+        ),
+      );
     }).toList();
   }
 }

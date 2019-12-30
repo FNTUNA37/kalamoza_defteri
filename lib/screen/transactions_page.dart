@@ -16,6 +16,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
   String _cardId;
   String _userId;
   String _amount;
+
   @override
   Widget build(BuildContext context) {
     FirebaseAuth.instance.currentUser().then((user) {
@@ -37,31 +38,22 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     child: Column(
                       children: <Widget>[
                         StreamBuilder<QuerySnapshot>(
-                            stream: cardApi.streamDataCollection(),
+                            stream: Firestore.instance
+                                .collection('cards')
+                                .where('userId', isEqualTo: _userId)
+                                .snapshots(),
                             builder: (context, snapshot) {
                               if (!snapshot.hasData)
                                 return const Text('Loading...');
                               return DropdownButton(
                                 items: snapshot.data.documents
                                     .map((DocumentSnapshot document) {
-                                  if (document.data['userId'] == _userId) {
-                                    return DropdownMenuItem(
-                                      value: document.documentID,
-                                      child: Text(
-                                        document.data['name'],
-                                      ),
-                                    );
-                                  } else if (document.data['userId'] !=
-                                      _userId) {
-                                    return DropdownMenuItem(
-                                      child: Text(document['name']),
-                                    );
-                                  } else {
-                                    return DropdownMenuItem(
-                                      value: null,
-                                      child: Text('Kart Ekleyin'),
-                                    );
-                                  }
+                                  return DropdownMenuItem(
+                                    value: document.documentID,
+                                    child: Text(
+                                      document.data['name'],
+                                    ),
+                                  );
                                 }).toList(),
                                 onChanged: (select) {
                                   setState(() {
@@ -93,18 +85,21 @@ class _TransactionsPageState extends State<TransactionsPage> {
                         style: TextStyle(color: Colors.white, fontSize: 16.0),
                       ),
                       onPressed: () {
-                        Navigator.pop(context);
-                        if (_formKey.currentState.validate()) {
-                          _formKey.currentState.save();
-                        }
-                        Firestore.instance
-                            .collection('transactions')
-                            .document()
-                            .setData({
-                          'CardId': _cardId,
-                          'UserId': _userId,
-                          'Type': 'Receivable',
-                          'Amount': _amount
+                        setState(() {
+                          Navigator.pop(context);
+                          if (_formKey.currentState.validate()) {
+                            _formKey.currentState.save();
+                          }
+                          Firestore.instance
+                              .collection('transactions')
+                              .document()
+                              .setData({
+                            'CardId': _cardId,
+                            'UserId': _userId,
+                            'Type': 'Receivable',
+                            'Amount': _amount,
+                            'Date': DateTime.now().toString(),
+                          });
                         });
                       },
                     )
@@ -124,32 +119,22 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     child: Column(
                       children: <Widget>[
                         StreamBuilder<QuerySnapshot>(
-                            stream: cardApi.streamDataCollection(),
+                            stream: Firestore.instance
+                                .collection('cards')
+                                .where('userId', isEqualTo: _userId)
+                                .snapshots(),
                             builder: (context, snapshot) {
                               if (!snapshot.hasData)
                                 return const Text('Loading...');
                               return DropdownButton(
                                 items: snapshot.data.documents
                                     .map((DocumentSnapshot document) {
-                                  //todo:Tüm kullanıcıların kartını listeliyo düzelt
-                                  if (document.data['userId'] == _userId) {
-                                    return DropdownMenuItem(
-                                      value: document.documentID,
-                                      child: Text(
-                                        document.data['name'],
-                                      ),
-                                    );
-                                  } else if (document.data['userId'] !=
-                                      _userId) {
-                                    return DropdownMenuItem(
-                                      child: Text(document['name']),
-                                    );
-                                  } else {
-                                    return DropdownMenuItem(
-                                      value: null,
-                                      child: Text('Kartr Ekleyin'),
-                                    );
-                                  }
+                                  return DropdownMenuItem(
+                                    value: document.documentID,
+                                    child: Text(
+                                      document.data['name'],
+                                    ),
+                                  );
                                 }).toList(),
                                 onChanged: (select) {
                                   setState(() {
@@ -180,18 +165,21 @@ class _TransactionsPageState extends State<TransactionsPage> {
                         style: TextStyle(color: Colors.white, fontSize: 16.0),
                       ),
                       onPressed: () {
-                        Navigator.pop(context);
-                        if (_formKey.currentState.validate()) {
-                          _formKey.currentState.save();
-                        }
-                        Firestore.instance
-                            .collection('transactions')
-                            .document()
-                            .setData({
-                          'CardId': _cardId,
-                          'UserId': _userId,
-                          'Type': 'Debt',
-                          'Amount': _amount
+                        setState(() {
+                          Navigator.pop(context);
+                          if (_formKey.currentState.validate()) {
+                            _formKey.currentState.save();
+                          }
+                          Firestore.instance
+                              .collection('transactions')
+                              .document()
+                              .setData({
+                            'CardId': _cardId,
+                            'UserId': _userId,
+                            'Type': 'Debt',
+                            'Amount': _amount,
+                            'Date': DateTime.now().toString(),
+                          });
                         });
                       },
                     )
@@ -203,134 +191,192 @@ class _TransactionsPageState extends State<TransactionsPage> {
             ),
           ],
         ),
-        Column(
-          children: <Widget>[
-            StreamBuilder(
-              stream: transactionsApi.streamDataCollection(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError)
-                  return new Text('Error: ${snapshot.error}');
-                switch (snapshot.connectionState) {
-                  case ConnectionState.waiting:
-                    return new Text('Loading...');
-                  default:
-                    return ListView(
-                      shrinkWrap: true,
-                      children: transactionsList(snapshot, _userId),
-                    );
-                }
-              },
-            ),
-          ],
+        Container(
+          height: 600.0,
+          child: PageView(
+            controller: PageController(viewportFraction: 1),
+            scrollDirection: Axis.vertical,
+            pageSnapping: true,
+            children: <Widget>[
+              StreamBuilder(
+                stream: Firestore.instance
+                    .collection('transactions')
+                    .where('UserId', isEqualTo: _userId)
+                    .orderBy('Date', descending: true)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError)
+                    return new Text('Error: ${snapshot.error}');
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                      return new Text('Loading...');
+                    default:
+                      return ListView(
+                        shrinkWrap: true,
+                        children: transactionsList(snapshot),
+                      );
+                  }
+                },
+              ),
+            ],
+          ),
         )
       ],
     );
   }
 
 //Todo:Taşınacak
-  List<Widget> transactionsList(AsyncSnapshot snapshot, String userId) {
+  List<Widget> transactionsList(AsyncSnapshot snapshot) {
     return snapshot.data.documents.map<Widget>((document) {
-      if (document['UserId'] == userId) {
-        return Container(
-          //Todo: Style taşınacak
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.green, width: 3.0),
-                    borderRadius: BorderRadius.circular(7.0),
-                  ),
-                  child: InkWell(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        Text(
-                          document['CardId'],
-                          style: TextStyle(
-                            fontSize: 25.0,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.green,
+      return Container(
+        //Todo: Style taşınacak
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black26, width: 3.0),
+                  borderRadius: BorderRadius.circular(7.0),
+                ),
+                child: InkWell(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      StreamBuilder(
+                        stream: Firestore.instance
+                            .collection('cards')
+                            .document(document['CardId'])
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            Text('Loading...');
+                          }
+                          var doc = snapshot.data;
+                          return Text(
+                            doc['name'],
+                            style: TextStyle(
+                                fontSize: 25.0, fontWeight: FontWeight.bold),
+                          );
+                        },
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            document['Date'].substring(0, 16),
+                            style: TextStyle(fontSize: 15.0),
                           ),
-                        ),
-                        Text(
-                          document['Amount'],
-                          textAlign: TextAlign.right,
-                          style: TextStyle(
-                              color: document['Type'] == 'Receivable'
-                                  ? Colors.green
-                                  : Colors.red),
-                        ),
-                      ],
-                    ),
-                    onTap: () {
-                      Alert(
-                        context: context,
-                        title: 'Description',
-                        content: Column(
-                          children: <Widget>[
-                            Row(
-                              children: <Widget>[
-                                Text(
-                                  'Card Name: ',
-                                  style: TextStyle(
-                                      color: Colors.black38,
-                                      fontSize: 20.0,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  document['UserId'],
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: <Widget>[
-                                Text(
-                                  'Description: ',
-                                  style: TextStyle(
-                                      color: Colors.black38,
-                                      fontSize: 20.0,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  document['description'],
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        style: AlertStyle(backgroundColor: Colors.white60),
-                        buttons: [
-                          DialogButton(
-                            child: Text('CANCEL',
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 16.0)),
-                            onPressed: () => Navigator.pop(context),
-                            color: Colors.red,
+                          Text(
+                            document['Amount'] + '₺',
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                                color: document['Type'] == 'Receivable'
+                                    ? Colors.green
+                                    : Colors.red,
+                                fontSize: 20.0),
                           ),
                         ],
-                      ).show();
-                    },
+                      ),
+                    ],
                   ),
+                  onTap: () {
+                    Alert(
+                      context: context,
+                      title: 'Description',
+                      content: Column(
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              Text(
+                                'Card Name: ',
+                                style: TextStyle(
+                                    color: Colors.black38,
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              //Todo: kod tekrarı var
+                              StreamBuilder(
+                                stream: Firestore.instance
+                                    .collection('cards')
+                                    .document(document['CardId'])
+                                    .snapshots(),
+                                builder: (context, snapshot) {
+                                  if (!snapshot.hasData) {
+                                    Text('Loading...');
+                                  }
+                                  var doc = snapshot.data;
+                                  return Text(
+                                    doc['name'],
+                                    style: TextStyle(
+                                        fontSize: 25.0,
+                                        fontWeight: FontWeight.bold),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: <Widget>[
+                              Text(
+                                'Description: ',
+                                style: TextStyle(
+                                    color: Colors.black38,
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              StreamBuilder(
+                                stream: Firestore.instance
+                                    .collection('cards')
+                                    .document(document['CardId'])
+                                    .snapshots(),
+                                builder: (context, snapshot) {
+                                  if (!snapshot.hasData) {
+                                    Text('Loading...');
+                                  }
+                                  var doc = snapshot.data;
+                                  return Text(
+                                    doc['description'],
+                                    style: TextStyle(
+                                        fontSize: 25.0,
+                                        fontWeight: FontWeight.bold),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      style: AlertStyle(backgroundColor: Colors.white60),
+                      buttons: [
+                        DialogButton(
+                          child: Text('CANCEL',
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 16.0)),
+                          onPressed: () => Navigator.pop(context),
+                          color: Colors.red,
+                        ),
+                        DialogButton(
+                          child: Text(
+                            'DEL',
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 16.0),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
+                    ).show();
+                  },
                 ),
               ),
-            ],
-          ),
-        );
-      } else if (document['UserId'] != userId) {
-        return Container();
-      } else {
-        return Container(
-          child: Center(
-            child: Text('No card, click Add Card to add '),
-          ),
-        );
-      }
+            ),
+          ],
+        ),
+      );
     }).toList();
   }
 }
