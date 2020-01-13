@@ -11,12 +11,19 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   String _userId;
-  TransactionsPage transactionsPage = new TransactionsPage();
+
+  @override
+  void initState() {
+    super.initState();
+    FirebaseAuth.instance.currentUser().then((user) {
+      setState(() {
+        _userId = user.uid;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    FirebaseAuth.instance.currentUser().then((user) {
-      _userId = user.uid;
-    });
     return Column(
       children: <Widget>[
         Container(
@@ -26,56 +33,97 @@ class _DashboardPageState extends State<DashboardPage> {
             scrollDirection: Axis.horizontal,
             pageSnapping: true,
             children: <Widget>[
-              CardContainer(
-                color: Colors.blue,
-                description: 'total receivable',
-              ),
-              CardContainer(
-                color: Colors.red,
-                description: 'total debt',
-              ),
-              CardContainer(
-                color: Colors.green,
-                description: 'total balance',
-              ),
+              StreamBuilder(
+                  stream: Firestore.instance
+                      .collection('transactions')
+                      .where('UserId', isEqualTo: _userId)
+                      .where('Type', isEqualTo: 'Receivable')
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError)
+                      return new Text('Error: ${snapshot.error}');
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.waiting:
+                        return Center(child: CircularProgressIndicator());
+                      default:
+                        int totalReceivable = 0;
+                        snapshot.data.documents.map((doc) {
+                          totalReceivable += int.parse(doc['Amount']);
+                        }).toString();
+                        return CardContainer(
+                            color: Colors.blue,
+                            description: 'total receivable',
+                            userId: _userId,
+                            amount: totalReceivable);
+                    }
+                  }),
+              StreamBuilder(
+                  stream: Firestore.instance
+                      .collection('transactions')
+                      .where('UserId', isEqualTo: _userId)
+                      .where('Type', isEqualTo: 'Debt')
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError)
+                      return new Text('Error: ${snapshot.error}');
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.waiting:
+                        return Center(child: CircularProgressIndicator());
+                      default:
+                        int totalDebt = 0;
+                        snapshot.data.documents.map((doc) {
+                          totalDebt += int.parse(doc['Amount']);
+                        }).toString();
+                        return CardContainer(
+                          color: Colors.red,
+                          description: 'total debt',
+                          amount: totalDebt,
+                        );
+                    }
+                  }),
+              StreamBuilder(
+                  stream: Firestore.instance
+                      .collection('transactions')
+                      .where('UserId', isEqualTo: _userId)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError)
+                      return new Text('Error: ${snapshot.error}');
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.waiting:
+                        return Center(child: CircularProgressIndicator());
+                      default:
+                        int totalBalance = 0;
+                        snapshot.data.documents.map((doc) {
+                          if (doc['Type'] == 'Receivable')
+                            totalBalance += int.parse(doc['Amount']);
+                          else
+                            totalBalance -= int.parse(doc['Amount']);
+                        }).toString();
+                        return CardContainer(
+                          color: Colors.green,
+                          description: 'total balance',
+                          amount: totalBalance,
+                        );
+                    }
+                  }),
             ],
           ),
         ),
-        StreamBuilder(
-          stream: Firestore.instance
-              .collection('transactions')
-              .where('UserId', isEqualTo: _userId)
-              .orderBy('Date', descending: true)
-              .snapshots(),
-          builder: (context, snapshot) {
-            return ListView(
-              shrinkWrap: true,
-              children: list(snapshot),
-            );
-          },
-        ),
       ],
     );
-  }
-
-  List<Widget> list(AsyncSnapshot snapshot) {
-    return snapshot.data.documents.map<Widget>((document) {
-      return Container(
-        child: Column(
-          children: <Widget>[Text(document['Date'])],
-        ),
-      );
-    }).toList();
   }
 }
 
 //TODO:Taşınıcak
 class CardContainer extends StatelessWidget {
-  CardContainer({this.color, this.description, this.amount});
+  CardContainer({this.color, this.description, this.userId, this.amount});
 
   final Color color;
   final String description;
   final int amount;
+  final String userId;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -85,7 +133,7 @@ class CardContainer extends StatelessWidget {
             padding:
                 const EdgeInsets.only(top: 80.0, left: 100.0, bottom: 20.0),
             child: Text(
-              amount.toString(),
+              amount.toString() + ' ₺',
               style: TextStyle(
                   fontSize: 35.0,
                   color: Colors.white,

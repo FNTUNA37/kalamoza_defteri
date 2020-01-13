@@ -14,13 +14,20 @@ class _CardPageState extends State<CardPage> {
   String _userId;
   String _description;
   String _cardName;
+  @override
+  void initState() {
+    super.initState();
+    FirebaseAuth.instance.currentUser().then((user) {
+      setState(() {
+        _userId = user.uid;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     //TODO: Ayrı bi yere al sonra kullanırsın
-    FirebaseAuth.instance.currentUser().then((user) {
-      _userId = user.uid;
-    });
+
     return Column(
       children: <Widget>[
         Row(
@@ -67,17 +74,19 @@ class _CardPageState extends State<CardPage> {
                         style: TextStyle(color: Colors.white, fontSize: 16.0),
                       ),
                       onPressed: () {
-                        Navigator.pop(context);
-                        if (_formKey.currentState.validate()) {
-                          _formKey.currentState.save();
-                        }
-                        Firestore.instance
-                            .collection('cards')
-                            .document()
-                            .setData({
-                          'name': _cardName,
-                          'userId': _userId,
-                          'description': _description
+                        setState(() {
+                          Navigator.pop(context);
+                          if (_formKey.currentState.validate()) {
+                            _formKey.currentState.save();
+                          }
+                          Firestore.instance
+                              .collection('cards')
+                              .document()
+                              .setData({
+                            'name': _cardName,
+                            'userId': _userId,
+                            'description': _description
+                          });
                         });
                       },
                     )
@@ -94,13 +103,13 @@ class _CardPageState extends State<CardPage> {
           stream: Firestore.instance
               .collection('cards')
               .where('userId', isEqualTo: _userId)
-              .orderBy('name', descending: true)
+              .orderBy('name', descending: false)
               .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.hasError) return new Text('Error: ${snapshot.error}');
             switch (snapshot.connectionState) {
               case ConnectionState.waiting:
-                return new Text('Loading...');
+                return Center(child: CircularProgressIndicator());
               default:
                 return ListView(
                   shrinkWrap: true,

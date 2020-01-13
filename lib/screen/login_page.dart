@@ -113,7 +113,9 @@ class _LoginPageState extends State<LoginPage> {
           suffixIcon: InkWell(
             child: passIcon,
             onTap: () {
-              //Todo: Çalışmıyor düzelt
+              //Todo: Çalışmıyor aq düzelt
+              //Todo: şifre 123456 unutma aq
+              // TODO:Tamam temizlemem yellos
               setState(() {
                 if (passIcon == Icon(Icons.visibility_off)) {
                   passIcon = Icon(Icons.visibility);

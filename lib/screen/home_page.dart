@@ -3,6 +3,7 @@ import 'package:kalamoza_defteri/authentication.dart';
 import 'package:kalamoza_defteri/screen/card_page.dart';
 import 'package:kalamoza_defteri/screen/dashboard_page.dart';
 import 'package:kalamoza_defteri/screen/transactions_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -23,6 +24,8 @@ class _HomePageState extends State<HomePage>
     }
   }
 
+  String _userId;
+  String UserName;
   bool isCollapsed = true;
   double screenWidth, screenHeight;
   final Duration duration = const Duration(milliseconds: 300);
@@ -42,6 +45,11 @@ class _HomePageState extends State<HomePage>
         Tween<double>(begin: 0.5, end: 1).animate(_controller);
     _slideAnimation = Tween<Offset>(begin: Offset(-1, 0), end: Offset(0, 0))
         .animate(_controller);
+    FirebaseAuth.instance.currentUser().then((user) {
+      setState(() {
+        _userId = user.email;
+      });
+    });
   }
 
   @override
@@ -189,11 +197,8 @@ class _HomePageState extends State<HomePage>
                   },
                 ),
                 SizedBox(height: 10),
-                Text("Funds Transfer",
-                    style: TextStyle(color: Colors.white, fontSize: 22)),
-                SizedBox(height: 10),
-                Text("Branches",
-                    style: TextStyle(color: Colors.white, fontSize: 22)),
+                Text(_userId,
+                    style: TextStyle(color: Colors.white, fontSize: 17.0)),
               ],
             ),
           ),

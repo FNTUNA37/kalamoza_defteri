@@ -16,13 +16,18 @@ class _TransactionsPageState extends State<TransactionsPage> {
   String _cardId;
   String _userId;
   String _amount;
+  @override
+  void initState() {
+    super.initState();
+    FirebaseAuth.instance.currentUser().then((user) {
+      setState(() {
+        _userId = user.uid;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    FirebaseAuth.instance.currentUser().then((user) {
-      _userId = user.uid;
-    });
-
     return Column(
       children: <Widget>[
         Row(
@@ -205,11 +210,11 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     .orderBy('Date', descending: true)
                     .snapshots(),
                 builder: (context, snapshot) {
-                  if (snapshot.hasError)
+                  if (snapshot.hasError) if (snapshot.hasError)
                     return new Text('Error: ${snapshot.error}');
                   switch (snapshot.connectionState) {
                     case ConnectionState.waiting:
-                      return new Text('Loading...');
+                      return Center(child: CircularProgressIndicator());
                     default:
                       return ListView(
                         shrinkWrap: true,
@@ -246,22 +251,27 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       StreamBuilder(
-                        stream: Firestore.instance
-                            .collection('cards')
-                            .document(document['CardId'])
-                            .snapshots(),
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
-                            Text('Loading...');
-                          }
-                          var doc = snapshot.data;
-                          return Text(
-                            doc['name'],
-                            style: TextStyle(
-                                fontSize: 25.0, fontWeight: FontWeight.bold),
-                          );
-                        },
-                      ),
+                          stream: Firestore.instance
+                              .collection('cards')
+                              .document(document['CardId'])
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasError)
+                              return new Text('Error: ${snapshot.error}');
+                            switch (snapshot.connectionState) {
+                              case ConnectionState.waiting:
+                                return Center(
+                                    child: CircularProgressIndicator());
+                              default:
+                                var doc = snapshot.data;
+                                return Text(
+                                  doc['name'],
+                                  style: TextStyle(
+                                      fontSize: 25.0,
+                                      fontWeight: FontWeight.bold),
+                                );
+                            }
+                          }),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
