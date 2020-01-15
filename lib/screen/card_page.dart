@@ -89,7 +89,7 @@ class _CardPageState extends State<CardPage> {
                           });
                         });
                       },
-                    )
+                    ),
                   ],
                 ).show();
               },
@@ -199,6 +199,23 @@ class _CardPageState extends State<CardPage> {
                                   color: Colors.white, fontSize: 16.0)),
                           onPressed: () => Navigator.pop(context),
                           color: Colors.red,
+                        ),
+                        DialogButton(
+                          child: Text(
+                            'DEL',
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 16.0),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              //todo: Sadece kartı siliyo işlem tablosundan karta ait işlemleride sil
+                              Firestore.instance
+                                  .collection('cards')
+                                  .document(document.documentID)
+                                  .delete();
+                              Navigator.pop(context);
+                            });
+                          },
                         ),
                       ],
                     ).show();

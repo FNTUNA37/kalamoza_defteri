@@ -337,23 +337,50 @@ class _TransactionsPageState extends State<TransactionsPage> {
                                     fontSize: 20.0,
                                     fontWeight: FontWeight.bold),
                               ),
-                              StreamBuilder(
-                                stream: Firestore.instance
-                                    .collection('cards')
-                                    .document(document['CardId'])
-                                    .snapshots(),
-                                builder: (context, snapshot) {
-                                  if (!snapshot.hasData) {
-                                    Text('Loading...');
-                                  }
-                                  var doc = snapshot.data;
-                                  return Text(
-                                    doc['description'],
-                                    style: TextStyle(
-                                        fontSize: 25.0,
-                                        fontWeight: FontWeight.bold),
-                                  );
-                                },
+                              Text(
+                                document['Type'],
+                                style: TextStyle(
+                                    fontSize: 25.0,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: <Widget>[
+                              Text(
+                                'Amount: ',
+                                style: TextStyle(
+                                    color: Colors.black38,
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                document['Amount'] + ' ₺',
+                                style: TextStyle(
+                                  fontSize: 25.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: document['Type'] == 'Receivable'
+                                      ? Colors.green
+                                      : Colors.red,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: <Widget>[
+                              Text(
+                                'Date: ',
+                                style: TextStyle(
+                                    color: Colors.black38,
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                document['Date'].substring(0, 16),
+                                style: TextStyle(
+                                  fontSize: 25.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -375,7 +402,13 @@ class _TransactionsPageState extends State<TransactionsPage> {
                                 TextStyle(color: Colors.white, fontSize: 16.0),
                           ),
                           onPressed: () {
-                            Navigator.pop(context);
+                            setState(() {
+                              Firestore.instance
+                                  .collection('transactions')
+                                  .document(document.documentID)
+                                  .delete();
+                              Navigator.pop(context);
+                            });
                           },
                         ),
                       ],
