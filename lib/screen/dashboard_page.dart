@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-import 'transactions_page.dart';
+import 'package:kalamoza_defteri/transactionsList.dart';
+import 'package:month_picker_dialog/month_picker_dialog.dart';
+import 'package:toast/toast.dart';
 
 class DashboardPage extends StatefulWidget {
   @override
@@ -11,7 +12,7 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   String _userId;
-
+  DateTime dateTime = DateTime.now();
   @override
   void initState() {
     super.initState();
@@ -48,7 +49,10 @@ class _DashboardPageState extends State<DashboardPage> {
                       default:
                         int totalReceivable = 0;
                         snapshot.data.documents.map((doc) {
-                          totalReceivable += int.parse(doc['Amount']);
+                          var parsedDate = DateTime.parse(doc['Date']);
+                          if (parsedDate.month == dateTime.month &&
+                              parsedDate.year == dateTime.year)
+                            totalReceivable += int.parse(doc['Amount']);
                         }).toString();
                         return CardContainer(
                             color: Colors.blue,
@@ -72,7 +76,10 @@ class _DashboardPageState extends State<DashboardPage> {
                       default:
                         int totalDebt = 0;
                         snapshot.data.documents.map((doc) {
-                          totalDebt += int.parse(doc['Amount']);
+                          var parsedDate = DateTime.parse(doc['Date']);
+                          if (parsedDate.month == dateTime.month &&
+                              parsedDate.year == dateTime.year)
+                            totalDebt += int.parse(doc['Amount']);
                         }).toString();
                         return CardContainer(
                           color: Colors.red,
@@ -95,10 +102,14 @@ class _DashboardPageState extends State<DashboardPage> {
                       default:
                         int totalBalance = 0;
                         snapshot.data.documents.map((doc) {
-                          if (doc['Type'] == 'Receivable')
-                            totalBalance += int.parse(doc['Amount']);
-                          else
-                            totalBalance -= int.parse(doc['Amount']);
+                          var parsedDate = DateTime.parse(doc['Date']);
+                          if (parsedDate.month == dateTime.month &&
+                              parsedDate.year == dateTime.year) {
+                            if (doc['Type'] == 'Receivable')
+                              totalBalance += int.parse(doc['Amount']);
+                            else
+                              totalBalance -= int.parse(doc['Amount']);
+                          }
                         }).toString();
                         return CardContainer(
                           color: Colors.green,
@@ -110,6 +121,58 @@ class _DashboardPageState extends State<DashboardPage> {
             ],
           ),
         ),
+        SizedBox(height: 10.0),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            FloatingActionButton.extended(
+              icon: Icon(Icons.date_range),
+              label: Text(
+                  dateTime.year.toString() + '-' + dateTime.month.toString()),
+              onPressed: () {
+                showMonthPicker(context: context, initialDate: DateTime.now())
+                    .then((value) {
+                  setState(() {
+                    value != null
+                        ? dateTime = value
+                        : dateTime = DateTime.now();
+                  });
+                });
+              },
+            )
+          ],
+        ),
+        Container(
+          height: 600.0,
+          child: PageView(
+            controller: PageController(viewportFraction: 1),
+            scrollDirection: Axis.vertical,
+            pageSnapping: true,
+            children: <Widget>[
+              StreamBuilder(
+                stream: Firestore.instance
+                    .collection('transactions')
+                    .where('UserId', isEqualTo: _userId)
+                    .orderBy('Date', descending: true)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) if (snapshot.hasError)
+                    return new Text('Error: ${snapshot.error}');
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                      return Center(child: CircularProgressIndicator());
+                    default:
+                      return ListView(
+                        shrinkWrap: true,
+                        children: transactionsList(
+                            snapshot, dateTime, context, setState),
+                      );
+                  }
+                },
+              ),
+            ],
+          ),
+        )
       ],
     );
   }

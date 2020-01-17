@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage>
   }
 
   String _userId;
-  String UserName;
+
   bool isCollapsed = true;
   double screenWidth, screenHeight;
   final Duration duration = const Duration(milliseconds: 300);
@@ -33,8 +33,9 @@ class _HomePageState extends State<HomePage>
   Animation<double> _scaleAnimation;
   Animation<double> _menuScaleAnimation;
   Animation<Offset> _slideAnimation;
+
   Color backgroundColor = Colors.white;
-  Widget screen = Container(child: Text('Home Page'));
+  Widget screen = DashboardPage();
 
   @override
   void initState() {
