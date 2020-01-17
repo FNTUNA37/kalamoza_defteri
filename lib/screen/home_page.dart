@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:kalamoza_defteri/authentication.dart';
+import 'package:kalamoza_defteri/services/authentication.dart';
 import 'package:kalamoza_defteri/screen/card_page.dart';
 import 'package:kalamoza_defteri/screen/dashboard_page.dart';
 import 'package:kalamoza_defteri/screen/transactions_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:kalamoza_defteri/utilities/constants.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -24,7 +25,7 @@ class _HomePageState extends State<HomePage>
     }
   }
 
-  String _userId;
+  String _email;
 
   bool isCollapsed = true;
   double screenWidth, screenHeight;
@@ -48,7 +49,7 @@ class _HomePageState extends State<HomePage>
         .animate(_controller);
     FirebaseAuth.instance.currentUser().then((user) {
       setState(() {
-        _userId = user.email;
+        _email = user.email;
       });
     });
   }
@@ -123,8 +124,7 @@ class _HomePageState extends State<HomePage>
                           });
                         },
                       ),
-                      Text("Kalamoza Defteri",
-                          style: TextStyle(fontSize: 24, color: Colors.black)),
+                      Text("Kalamoza Defteri", style: kAppNameTextStyle),
                       InkWell(
                         child: Icon(Icons.exit_to_app, color: Colors.black),
                         onTap: _logoutUser,
@@ -162,7 +162,7 @@ class _HomePageState extends State<HomePage>
                 InkWell(
                   child: Text(
                     "Dashboard",
-                    style: TextStyle(color: Colors.red, fontSize: 22),
+                    style: kMenuScreenNameTextStyle,
                   ),
                   onTap: () {
                     setState(() {
@@ -175,7 +175,7 @@ class _HomePageState extends State<HomePage>
                 InkWell(
                   child: Text(
                     "Cards",
-                    style: TextStyle(color: Colors.red, fontSize: 22),
+                    style: kMenuScreenNameTextStyle,
                   ),
                   onTap: () {
                     setState(() {
@@ -188,7 +188,7 @@ class _HomePageState extends State<HomePage>
                 InkWell(
                   child: Text(
                     "Transactions",
-                    style: TextStyle(color: Colors.red, fontSize: 22),
+                    style: kMenuScreenNameTextStyle,
                   ),
                   onTap: () {
                     setState(() {
@@ -198,8 +198,7 @@ class _HomePageState extends State<HomePage>
                   },
                 ),
                 SizedBox(height: 10),
-                Text(_userId,
-                    style: TextStyle(color: Colors.white, fontSize: 17.0)),
+                Text(_email, style: kMenuEmailTextStyle),
               ],
             ),
           ),

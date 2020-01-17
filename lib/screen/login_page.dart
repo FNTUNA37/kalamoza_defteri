@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:kalamoza_defteri/authentication.dart';
+import 'package:kalamoza_defteri/services/authentication.dart';
+import 'package:toast/toast.dart';
+import 'package:kalamoza_defteri/utilities/constants.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -16,8 +18,7 @@ enum FormType {
 
 class _LoginPageState extends State<LoginPage> {
   final formKey = new GlobalKey<FormState>();
-  Icon passIcon = Icon(Icons.visibility_off);
-  bool obscureText = true;
+
   FormType _formType = FormType.login;
   String _email = '';
   String _password = '';
@@ -43,7 +44,8 @@ class _LoginPageState extends State<LoginPage> {
         }
         widget.onSignedIn();
       } catch (e) {
-        print('Error= ' + e.toString());
+        Toast.show(e.toString(), context,
+            duration: Toast.LENGTH_LONG, gravity: Toast.TOP);
       }
     }
   }
@@ -75,12 +77,15 @@ class _LoginPageState extends State<LoginPage> {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Container(
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: createInputs() + createButtons(),
+              Padding(
+                padding: const EdgeInsets.only(top: 65.0),
+                child: Container(
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: createInputs() + createButtons(),
+                    ),
                   ),
                 ),
               ),
@@ -93,52 +98,56 @@ class _LoginPageState extends State<LoginPage> {
 
   List<Widget> createInputs() {
     return [
-      TextFormField(
-        decoration:
-            InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.mail)),
-        validator: (value) {
-          return value.isEmpty ? 'Email is required' : null;
-        },
-        onSaved: (value) {
-          return _email = value;
-        },
+      Container(
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0), border: Border.all()),
+        child: Column(
+          children: <Widget>[
+            Container(
+              decoration: BoxDecoration(),
+              child: TextFormField(
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  prefixIcon: Icon(Icons.mail),
+                ),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  Pattern pattern =
+                      r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+                  RegExp regex = new RegExp(pattern);
+                  if (!regex.hasMatch(value))
+                    return 'Enter Valid Email';
+                  else
+                    return null;
+                },
+                onSaved: (value) {
+                  return _email = value;
+                },
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(),
+              child: TextFormField(
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  prefixIcon: Icon(Icons.lock),
+                ),
+                obscureText: true,
+                validator: (value) {
+                  return value.isEmpty ? 'Password is required' : null;
+                },
+                onSaved: (value) {
+                  return _password = value;
+                },
+              ),
+            ),
+          ],
+        ),
       ),
       SizedBox(
         height: 10.0,
       ),
-      TextFormField(
-        decoration: InputDecoration(
-          labelText: 'Password',
-          prefixIcon: Icon(Icons.lock),
-          suffixIcon: InkWell(
-            child: passIcon,
-            onTap: () {
-              //Todo: Çalışmıyor aq düzelt
-              //Todo: şifre 123456 unutma aq
-              // TODO:Tamam temizlemem yellos
-              setState(() {
-                if (passIcon == Icon(Icons.visibility_off)) {
-                  passIcon = Icon(Icons.visibility);
-                  obscureText = false;
-                } else {
-                  passIcon = Icon(Icons.visibility_off);
-                  obscureText = true;
-                }
-              });
-            },
-          ),
-        ),
-        obscureText: obscureText,
-        validator: (value) {
-          return value.isEmpty ? 'Password is required' : null;
-        },
-        onSaved: (value) {
-          return _password = value;
-        },
-      ),
-      SizedBox(
-        height: 20.0,
-      ),
+      SizedBox(height: 20.0),
     ];
   }
 
@@ -146,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
     if (_formType == FormType.login) {
       return [
         RaisedButton(
-          child: Text('Login', style: TextStyle(fontSize: 20.0)),
+          child: Text('Login', style: kLoginPageButtonTextStyle),
           textColor: Colors.white,
           color: Colors.pink,
           onPressed: validateAndSubmit,
@@ -161,15 +170,14 @@ class _LoginPageState extends State<LoginPage> {
     } else {
       return [
         RaisedButton(
-          child: Text('Create Account', style: TextStyle(fontSize: 20.0)),
+          child: Text('Create Account', style: kLoginPageButtonTextStyle),
           textColor: Colors.white,
           color: Colors.pink,
           onPressed: validateAndSubmit,
         ),
         FlatButton(
           child: Text('Already have an Account ? Login',
-              style: TextStyle(fontSize: 14.0)),
-          textColor: Colors.red,
+              style: kLoginPageAlreadyTextStyle),
           onPressed: moveToLogin,
         )
       ];

@@ -3,8 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
-import 'package:kalamoza_defteri/transactionsList.dart';
+import 'package:kalamoza_defteri/utilities/transactionsList.dart';
 import 'package:toast/toast.dart';
+import 'package:kalamoza_defteri/utilities/constants.dart';
 
 class TransactionsPage extends StatefulWidget {
   @override
@@ -18,9 +19,10 @@ class _TransactionsPageState extends State<TransactionsPage> {
   String _userId;
   String _amount;
 
-  DateTime dateTime = DateTime.now();
+  DateTime dateTime;
   @override
   void initState() {
+    dateTime = DateTime.now();
     super.initState();
     FirebaseAuth.instance.currentUser().then((user) {
       setState(() {
@@ -41,65 +43,67 @@ class _TransactionsPageState extends State<TransactionsPage> {
                 Alert(
                   context: context,
                   title: 'Add Receivable',
-                  content: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: <Widget>[
-                        StreamBuilder<QuerySnapshot>(
-                            stream: Firestore.instance
-                                .collection('cards')
-                                .where('userId', isEqualTo: _userId)
-                                .snapshots(),
-                            builder: (context, snapshot) {
-                              String _dropValue = 'Select Card';
-                              if (!snapshot.hasData)
-                                return const Text('Loading...');
-                              return DropdownButton(
-                                hint: Text(_dropValue),
-                                items: snapshot.data.documents
-                                    .map((DocumentSnapshot document) {
-                                  return DropdownMenuItem(
-                                    value: document.documentID,
-                                    child: Text(
-                                      document.data['name'],
-                                    ),
+                  content: StatefulBuilder(
+                    builder: (BuildContext context, StateSetter setState) {
+                      return Form(
+                        key: _formKey,
+                        child: Column(
+                          children: <Widget>[
+                            StreamBuilder<QuerySnapshot>(
+                                stream: Firestore.instance
+                                    .collection('cards')
+                                    .where('userId', isEqualTo: _userId)
+                                    .snapshots(),
+                                builder: (context, snapshot) {
+                                  if (!snapshot.hasData)
+                                    return const Text('Loading...');
+                                  return DropdownButton(
+                                    hint: Text('Select Card'),
+                                    value: _cardId,
+                                    onChanged: (String select) {
+                                      setState(() {
+                                        print(select);
+                                        _cardId = select;
+                                      });
+                                    },
+                                    items: snapshot.data.documents
+                                        .map((DocumentSnapshot document) {
+                                      return DropdownMenuItem(
+                                        value: document.documentID,
+                                        child: Text(
+                                          document.data['name'],
+                                        ),
+                                      );
+                                    }).toList(),
+                                    icon: Icon(Icons.folder_shared),
                                   );
-                                }).toList(),
-                                onChanged: (select) {
-                                  setState(() {
-                                    print(select);
-                                    _cardId = select;
-                                  });
-                                },
-                                icon: Icon(Icons.folder_shared),
-                              );
-                            }),
-                        TextFormField(
-                          keyboardType: TextInputType.number,
-                          validator: (input) {
-                            final isDigitsOnly = int.tryParse(input);
-                            return isDigitsOnly == null
-                                ? 'Input needs to be digits only'
-                                : null;
-                          },
-                          decoration: InputDecoration(
-                            labelText: 'Amount',
-                            icon: Icon(Icons.monetization_on),
-                          ),
-                          onSaved: (value) {
-                            return _amount = value;
-                          },
+                                }),
+                            TextFormField(
+                              keyboardType: TextInputType.number,
+                              validator: (input) {
+                                final isDigitsOnly = int.tryParse(input);
+                                return isDigitsOnly == null
+                                    ? 'Input needs to be digits only'
+                                    : null;
+                              },
+                              decoration: InputDecoration(
+                                labelText: 'Amount',
+                                icon: Icon(Icons.monetization_on),
+                              ),
+                              onSaved: (value) {
+                                return _amount = value;
+                              },
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                   buttons: [
-                    //Todo:Kod tekrarı var yeni widget oluşturup başka yere taşı
                     DialogButton(
-                      //Todo: Style taşınacak
                       child: Text(
                         'ADD',
-                        style: TextStyle(color: Colors.white, fontSize: 16.0),
+                        style: kCardPageAlertAddTextStyle,
                       ),
                       onPressed: () {
                         if (_formKey.currentState.validate()) {
@@ -138,64 +142,67 @@ class _TransactionsPageState extends State<TransactionsPage> {
                 Alert(
                   context: context,
                   title: 'Add Debt',
-                  content: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: <Widget>[
-                        StreamBuilder<QuerySnapshot>(
-                            stream: Firestore.instance
-                                .collection('cards')
-                                .where('userId', isEqualTo: _userId)
-                                .snapshots(),
-                            builder: (context, snapshot) {
-                              String _dropValue = 'Select Card';
-                              if (!snapshot.hasData)
-                                return const Text('Loading...');
-                              return DropdownButton(
-                                hint: Text(_dropValue),
-                                items: snapshot.data.documents
-                                    .map((DocumentSnapshot document) {
-                                  return DropdownMenuItem(
-                                    value: document.documentID,
-                                    child: Text(
-                                      document.data['name'],
-                                    ),
+                  content: StatefulBuilder(
+                    builder: (BuildContext context, StateSetter setState) {
+                      return Form(
+                        key: _formKey,
+                        child: Column(
+                          children: <Widget>[
+                            StreamBuilder<QuerySnapshot>(
+                                stream: Firestore.instance
+                                    .collection('cards')
+                                    .where('userId', isEqualTo: _userId)
+                                    .snapshots(),
+                                builder: (context, snapshot) {
+                                  if (!snapshot.hasData)
+                                    return const Text('Loading...');
+                                  return DropdownButton(
+                                    value: _cardId,
+                                    hint: Text('Select Card'),
+                                    items: snapshot.data.documents
+                                        .map((DocumentSnapshot document) {
+                                      return DropdownMenuItem(
+                                        value: document.documentID,
+                                        child: Text(
+                                          document.data['name'],
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (select) {
+                                      setState(() {
+                                        print(select);
+                                        _cardId = select;
+                                      });
+                                    },
+                                    icon: Icon(Icons.folder_shared),
                                   );
-                                }).toList(),
-                                onChanged: (select) {
-                                  setState(() {
-                                    print(select);
-                                    _cardId = select;
-                                  });
-                                },
-                                icon: Icon(Icons.folder_shared),
-                              );
-                            }),
-                        TextFormField(
-                          keyboardType: TextInputType.number,
-                          validator: (input) {
-                            final isDigitsOnly = int.tryParse(input);
-                            return isDigitsOnly == null
-                                ? 'Input needs to be digits only'
-                                : null;
-                          },
-                          decoration: InputDecoration(
-                            labelText: 'Amount',
-                            icon: Icon(Icons.monetization_on),
-                          ),
-                          onSaved: (value) {
-                            return _amount = value;
-                          },
+                                }),
+                            TextFormField(
+                              keyboardType: TextInputType.number,
+                              validator: (input) {
+                                final isDigitsOnly = int.tryParse(input);
+                                return isDigitsOnly == null
+                                    ? 'Input needs to be digits only'
+                                    : null;
+                              },
+                              decoration: InputDecoration(
+                                labelText: 'Amount',
+                                icon: Icon(Icons.monetization_on),
+                              ),
+                              onSaved: (value) {
+                                return _amount = value;
+                              },
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                   buttons: [
                     DialogButton(
-                      //Todo: Style taşınacak
                       child: Text(
                         'ADD',
-                        style: TextStyle(color: Colors.white, fontSize: 16.0),
+                        style: kCardPageAlertAddTextStyle,
                       ),
                       onPressed: () {
                         if (_formKey.currentState.validate()) {
@@ -239,6 +246,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             FloatingActionButton.extended(
+              backgroundColor: Colors.green,
               icon: Icon(Icons.date_range),
               label: Text(
                   dateTime.year.toString() + '-' + dateTime.month.toString()),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kalamoza_defteri/utilities/constants.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 List<Widget> transactionsList(
@@ -8,7 +9,6 @@ List<Widget> transactionsList(
     var parsedDate = DateTime.parse(document['Date']);
 
     return Container(
-      //Todo: Style taşınacak
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
@@ -42,9 +42,7 @@ List<Widget> transactionsList(
                                     var doc = snapshot.data;
                                     return Text(
                                       doc['name'],
-                                      style: TextStyle(
-                                          fontSize: 25.0,
-                                          fontWeight: FontWeight.bold),
+                                      style: kTransactionsListNameTextStyle,
                                     );
                                 }
                               }),
@@ -53,7 +51,7 @@ List<Widget> transactionsList(
                             children: <Widget>[
                               Text(
                                 document['Date'].substring(0, 16),
-                                style: TextStyle(fontSize: 15.0),
+                                style: kTransactionsListDateTextStyle,
                               ),
                               Text(
                                 document['Amount'] + '₺',
@@ -76,14 +74,8 @@ List<Widget> transactionsList(
                             children: <Widget>[
                               Row(
                                 children: <Widget>[
-                                  Text(
-                                    'Card Name: ',
-                                    style: TextStyle(
-                                        color: Colors.black38,
-                                        fontSize: 20.0,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  //Todo: kod tekrarı var
+                                  Text('Card Name: ',
+                                      style: kAlertDescriptionTextStyle),
                                   StreamBuilder(
                                     stream: Firestore.instance
                                         .collection('cards')
@@ -96,9 +88,7 @@ List<Widget> transactionsList(
                                       var doc = snapshot.data;
                                       return Text(
                                         doc['name'],
-                                        style: TextStyle(
-                                            fontSize: 25.0,
-                                            fontWeight: FontWeight.bold),
+                                        style: kAlertDescriptionValueTextStyle,
                                       );
                                     },
                                   ),
@@ -108,16 +98,11 @@ List<Widget> transactionsList(
                                 children: <Widget>[
                                   Text(
                                     'Description: ',
-                                    style: TextStyle(
-                                        color: Colors.black38,
-                                        fontSize: 20.0,
-                                        fontWeight: FontWeight.bold),
+                                    style: kAlertDescriptionTextStyle,
                                   ),
                                   Text(
                                     document['Type'],
-                                    style: TextStyle(
-                                        fontSize: 25.0,
-                                        fontWeight: FontWeight.bold),
+                                    style: kAlertDescriptionValueTextStyle,
                                   ),
                                 ],
                               ),
@@ -125,38 +110,23 @@ List<Widget> transactionsList(
                                 children: <Widget>[
                                   Text(
                                     'Amount: ',
-                                    style: TextStyle(
-                                        color: Colors.black38,
-                                        fontSize: 20.0,
-                                        fontWeight: FontWeight.bold),
+                                    style: kAlertDescriptionTextStyle,
                                   ),
-                                  Text(
-                                    document['Amount'] + ' ₺',
-                                    style: TextStyle(
-                                      fontSize: 25.0,
-                                      fontWeight: FontWeight.bold,
-                                      color: document['Type'] == 'Receivable'
-                                          ? Colors.green
-                                          : Colors.red,
-                                    ),
-                                  ),
+                                  Text(document['Amount'] + ' ₺',
+                                      style: document['Type'] == 'Receivable'
+                                          ? kTransactionsListReceivableTextStyle
+                                          : kTransactionsListDebtTextStyle),
                                 ],
                               ),
                               Row(
                                 children: <Widget>[
                                   Text(
                                     'Date: ',
-                                    style: TextStyle(
-                                        color: Colors.black38,
-                                        fontSize: 20.0,
-                                        fontWeight: FontWeight.bold),
+                                    style: kAlertDescriptionTextStyle,
                                   ),
                                   Text(
                                     document['Date'].substring(0, 16),
-                                    style: TextStyle(
-                                      fontSize: 25.0,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    style: kAlertDescriptionValueTextStyle,
                                   ),
                                 ],
                               ),
@@ -165,17 +135,15 @@ List<Widget> transactionsList(
                           style: AlertStyle(backgroundColor: Colors.white60),
                           buttons: [
                             DialogButton(
-                              child: Text('CANCEL',
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 16.0)),
+                              child:
+                                  Text('CANCEL', style: kAlertButtonTextStyle),
                               onPressed: () => Navigator.pop(context),
                               color: Colors.red,
                             ),
                             DialogButton(
                                 child: Text(
                                   'DEL',
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 16.0),
+                                  style: kAlertButtonTextStyle,
                                 ),
                                 onPressed: () {
                                   setState(() {

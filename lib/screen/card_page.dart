@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:kalamoza_defteri/utilities/constants.dart';
+import 'package:kalamoza_defteri/utilities/cardList.dart';
 
 class CardPage extends StatefulWidget {
   @override
@@ -26,8 +28,6 @@ class _CardPageState extends State<CardPage> {
 
   @override
   Widget build(BuildContext context) {
-    //TODO: Ayrı bi yere al sonra kullanırsın
-
     return Column(
       children: <Widget>[
         Row(
@@ -37,7 +37,6 @@ class _CardPageState extends State<CardPage> {
             FloatingActionButton.extended(
               splashColor: Colors.pink,
               onPressed: () {
-                //Todo: Taşınacak
                 Alert(
                   context: context,
                   title: 'Add Card',
@@ -68,11 +67,7 @@ class _CardPageState extends State<CardPage> {
                   ),
                   buttons: [
                     DialogButton(
-                      //Todo: Style taşınacak
-                      child: Text(
-                        'ADD',
-                        style: TextStyle(color: Colors.white, fontSize: 16.0),
-                      ),
+                      child: Text('ADD', style: kCardPageAlertAddTextStyle),
                       onPressed: () {
                         setState(() {
                           Navigator.pop(context);
@@ -113,119 +108,12 @@ class _CardPageState extends State<CardPage> {
               default:
                 return ListView(
                   shrinkWrap: true,
-                  children: cardList(snapshot, _userId),
+                  children: cardList(context, snapshot, _userId, setState),
                 );
             }
           },
         ),
       ],
     );
-  }
-
-//Todo: başka yere taşı
-  List<Widget> cardList(AsyncSnapshot snapshot, String userId) {
-    return snapshot.data.documents.map<Widget>((document) {
-      return Container(
-        //Todo: Style taşınacak
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.green, width: 3.0),
-                  borderRadius: BorderRadius.circular(7.0),
-                ),
-                child: InkWell(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      Text(
-                        document['name'],
-                        style: TextStyle(
-                          fontSize: 25.0,
-                          fontWeight: FontWeight.w600,
-                          decorationColor: Colors.green,
-                          color: Colors.green,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                  onTap: () {
-                    Alert(
-                      context: context,
-                      title: 'Description',
-                      content: Column(
-                        children: <Widget>[
-                          Row(
-                            children: <Widget>[
-                              Text(
-                                'Card Name: ',
-                                style: TextStyle(
-                                    color: Colors.black38,
-                                    fontSize: 20.0,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                document['name'],
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: <Widget>[
-                              Text(
-                                'Description: ',
-                                style: TextStyle(
-                                    color: Colors.black38,
-                                    fontSize: 20.0,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                document['description'],
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      style: AlertStyle(backgroundColor: Colors.white60),
-                      buttons: [
-                        DialogButton(
-                          child: Text('CANCEL',
-                              style: TextStyle(
-                                  color: Colors.white, fontSize: 16.0)),
-                          onPressed: () => Navigator.pop(context),
-                          color: Colors.red,
-                        ),
-                        DialogButton(
-                          child: Text(
-                            'DEL',
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 16.0),
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              //todo: Sadece kartı siliyo işlem tablosundan karta ait işlemleride sil
-                              Firestore.instance
-                                  .collection('cards')
-                                  .document(document.documentID)
-                                  .delete();
-                              Navigator.pop(context);
-                            });
-                          },
-                        ),
-                      ],
-                    ).show();
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }).toList();
   }
 }

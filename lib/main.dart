@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:kalamoza_defteri/authentication.dart';
-import 'package:kalamoza_defteri/mapping.dart';
+import 'package:kalamoza_defteri/services/authentication.dart';
+import 'package:kalamoza_defteri/services/mapping.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

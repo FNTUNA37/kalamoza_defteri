@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kalamoza_defteri/authentication.dart';
+import 'package:kalamoza_defteri/services/authentication.dart';
 import 'package:kalamoza_defteri/screen/home_page.dart';
 import 'package:kalamoza_defteri/screen/login_page.dart';
 
