@@ -183,15 +183,4 @@ class _LoginPageState extends State<LoginPage> {
       ];
     }
   }
-
-  Widget logo() {
-    return Hero(
-      tag: 'hero',
-      child: CircleAvatar(
-        backgroundColor: Colors.transparent,
-        radius: 110.0,
-        child: null,
-      ),
-    );
-  }
 }

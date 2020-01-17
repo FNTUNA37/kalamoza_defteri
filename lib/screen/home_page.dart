@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage>
     }
   }
 
-  String _email;
+  String _email = '';
 
   bool isCollapsed = true;
   double screenWidth, screenHeight;
